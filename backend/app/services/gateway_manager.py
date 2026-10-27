@@ -143,15 +143,14 @@ class GatewayManager:
             raise ValueError(f"Unknown scenario '{scenario_id}'")
 
         # Automatically start gateway if not running
-        was_running = self.is_running
-        if not was_running:
+        if not self.is_running:
             await self.start_gateway(
                 charger_port=self.config.charger_port,
                 csms_port=self.config.csms_port,
-                start_mock_csms=False,  # Runner spins up its own dedicated CSMS
+                start_mock_csms=True,
             )
 
-        runner = ScenarioRunner(proxy=self.proxy)
+        runner = ScenarioRunner(proxy=self.proxy, csms=self.mock_csms)
         result = await runner.run(scenario_id=scenario_id, charger_id=charger_id, config=self.config)
         return result
 

@@ -72,6 +72,12 @@ class MockCSMS:
             self.server = None
         logger.info("Mock CSMS stopped cleanly")
 
+    def reset_history(self) -> None:
+        """Clear recorded frames between test scenarios."""
+        self.received_frames.clear()
+        self.sent_frames.clear()
+        self._response_waiters.clear()
+
     async def wait_for_connection(self, charge_point_id: str, timeout: float = 3.0) -> ServerConnection:
         """Wait until the specified charge point connects upstream."""
         start_time = asyncio.get_event_loop().time()

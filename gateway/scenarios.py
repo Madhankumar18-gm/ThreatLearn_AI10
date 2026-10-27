@@ -115,8 +115,13 @@ class ScenarioRunner:
     or sets up a dedicated testbench session.
     """
 
-    def __init__(self, proxy: Optional[GatewayProxy] = None):
+    def __init__(
+        self,
+        proxy: Optional[GatewayProxy] = None,
+        csms: Optional[MockCSMS] = None,
+    ):
         self.proxy = proxy
+        self.csms = csms
 
     async def run(
         self,
@@ -149,9 +154,15 @@ class ScenarioRunner:
                     original_cb(evt)
             active_proxy.audit_callback = _chained_cb
 
-        # Spin up local mock CSMS on csms_port
-        mock_csms = MockCSMS(host=cfg.csms_host, port=cfg.csms_port)
-        await mock_csms.start()
+        # Reuse existing running mock CSMS or spin up a local mock CSMS on csms_port
+        local_csms = None
+        if self.csms and self.csms.is_running:
+            mock_csms = self.csms
+            mock_csms.reset_history()
+        else:
+            local_csms = MockCSMS(host=cfg.csms_host, port=cfg.csms_port)
+            await local_csms.start()
+            mock_csms = local_csms
 
         # Spin up local mock Charger
         mock_charger = MockChargePoint(
@@ -198,7 +209,8 @@ class ScenarioRunner:
 
         finally:
             await mock_charger.disconnect()
-            await mock_csms.stop()
+            if local_csms:
+                await local_csms.stop()
             if local_proxy:
                 await local_proxy.stop()
 

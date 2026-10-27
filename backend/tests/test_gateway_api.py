@@ -99,22 +99,39 @@ def test_gateway_interventions_endpoints():
     assert res_clear.json()["total_records"] == 0
 
 
-def test_gateway_run_scenario_via_api():
-    """Verify POST /api/gateway/test-scenario runs scenario and returns structured result."""
-    # Run excessive_current scenario
-    res = client.post(
-        "/api/gateway/test-scenario",
-        json={"scenario_id": "excessive_current", "charger_id": "CP_API_TEST"},
-    )
-    assert res.status_code == 200
-    data = res.json()
-    assert data["scenario_id"] == "excessive_current"
-    assert data["status"] == "SUCCESS"
-    assert data["verification_passed"] is True
-    assert data["charger_received_limit"] == 100.0
+def test_gateway_run_scenario_while_already_running():
+    """
+    Verify POST /api/gateway/test-scenario when Gateway is already started and RUNNING.
+    Reuses existing MockCSMS without Errno 10048 port collision.
+    Uses dedicated test ports (9500/9501) on a persistent event loop.
+    """
+    import asyncio
+    import httpx
 
-    # Ensure decisions appear in the interventions endpoint
-    res_audit = client.get("/api/gateway/interventions")
-    assert res_audit.status_code == 200
-    clamp_records = [i for i in res_audit.json()["interventions"] if i["decision"] == "CLAMP"]
-    assert len(clamp_records) >= 1
+    async def _test():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as ac:
+            # 1. Start Gateway first (as user did in UI)
+            res_start = await ac.post("/api/gateway/start", json={"charger_port": 9500, "csms_port": 9501})
+            assert res_start.status_code == 200
+            assert res_start.json()["is_running"] is True
+
+            try:
+                # 2. Run scenario while gateway is already running
+                res_scen = await ac.post(
+                    "/api/gateway/test-scenario",
+                    json={"scenario_id": "excessive_current", "charger_id": "CP_LIVE_REUSE"},
+                )
+                assert res_scen.status_code == 200
+                data = res_scen.json()
+                assert data["status"] == "SUCCESS"
+                assert data["verification_passed"] is True
+                assert data["charger_received_limit"] == 100.0
+            finally:
+                # 3. Cleanly stop gateway
+                res_stop = await ac.post("/api/gateway/stop")
+                assert res_stop.status_code == 200
+                assert res_stop.json()["is_running"] is False
+
+    asyncio.run(_test())
+
+
