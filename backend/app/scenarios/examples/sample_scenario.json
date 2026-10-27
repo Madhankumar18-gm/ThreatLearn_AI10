@@ -1,0 +1,73 @@
+{
+  "schema_version": "2.0.0",
+  "exported_at": "2026-10-26T12:00:00Z",
+  "scenario": {
+    "scenario_id": "SCN-IMP-SAMPLE",
+    "name": "Custom Dual Current Spoofing & High Load",
+    "family": "Custom",
+    "description": "Demonstration scenario testing concurrent current spoofing and thermal warning thresholds under 0.08 noise.",
+    "duration_seconds": 60.0,
+    "default_seed": 1042,
+    "components_involved": [
+      "csms_backend",
+      "evse_controller",
+      "power_converter",
+      "battery_pack",
+      "cooling_system"
+    ],
+    "scheduled_events": [
+      {
+        "event_id": "EV-01",
+        "timestamp": 5.0,
+        "event_type": "START_TRANSACTION",
+        "source": "ocpp_csms",
+        "target": "evse_controller",
+        "description": "Authorized fast charge session requested at 50A",
+        "details": {
+          "requested_current": 50.0
+        }
+      },
+      {
+        "event_id": "EV-02",
+        "timestamp": 20.0,
+        "event_type": "CHANGE_CURRENT_LIMIT",
+        "source": "ocpp_csms",
+        "target": "evse_controller",
+        "description": "Malicious elevated current setpoint override",
+        "details": {
+          "requested_current": 140.0
+        }
+      },
+      {
+        "event_id": "EV-03",
+        "timestamp": 35.0,
+        "event_type": "DISABLE_COOLING",
+        "source": "internal_bms",
+        "target": "cooling_system",
+        "description": "Cooling loop actuator turned off",
+        "details": {}
+      }
+    ],
+    "expected_physical_effects": "Rapid battery temperature increase towards 60°C caution threshold.",
+    "ground_truth_links": [],
+    "expected_outcome": "Demonstrates clear causal temperature rise following cyber commands.",
+    "safety_limitations": "Safe illustrative simulation only.",
+    "sensor_noise_std": 0.08,
+    "cyber_timestamp_offset": 0.5,
+    "telemetry_timestamp_offset": 0.0,
+    "defense_config": {
+      "authorization_check_enabled": true,
+      "allowed_command_list_enabled": false,
+      "current_cap_enabled": false,
+      "current_cap_max_a": 150.0,
+      "rate_limiting_enabled": false,
+      "rate_limit_max_commands_per_sec": 2,
+      "sensor_cross_checking_enabled": false,
+      "sensor_plausibility_max_residual": 5.0,
+      "thermal_lockout_enabled": false,
+      "thermal_lockout_temp_c": 60.0
+    },
+    "is_custom": true,
+    "is_held_out": false
+  }
+}

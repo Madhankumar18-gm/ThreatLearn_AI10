@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: threatlens-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - CYBERTRACE_DB_PATH=/app/data/cybertrace.db
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - threatlens_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: threatlens-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  threatlens_data:
+    name: threatlens_data
