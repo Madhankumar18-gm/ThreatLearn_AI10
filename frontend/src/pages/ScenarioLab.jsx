@@ -32,7 +32,7 @@ const SIMULATION_STAGES = [
   'Running digital twin state machine',
   'Generating physics telemetry',
   'Analysing dependency paths',
-  'Running counterfactual replay',
+  'Evaluating cyber-physical impact chain',
   'Rendering evidence & proof'
 ];
 

@@ -25,7 +25,8 @@ from backend.app.schemas.simulation import (
     SimulationRunRequest, SimulationRunResponse, RunSummary
 )
 from backend.app.schemas.analysis import (
-    CorrelationLink, CounterfactualRequest, CounterfactualResponse, InvestigatorGuidance
+    CorrelationLink, CounterfactualRequest, CounterfactualResponse, InvestigatorGuidance,
+    ImpactAnalysisReport
 )
 from backend.app.schemas.defense import (
     DefenseConfiguration, DefenseComparisonRequest, DefenseEffectivenessResponse
@@ -58,6 +59,7 @@ from backend.app.analysis.evaluation import EvaluationEngine
 from backend.app.analysis.ablation import AblationEngine
 from backend.app.reports.report_generator import ReportGenerator
 from backend.app.analysis.dependency_graph import dependency_graph
+from backend.app.analysis.impact_analysis import ImpactAnalysisEngine
 from backend.app.core.config import settings
 
 router = APIRouter()
@@ -204,6 +206,35 @@ def get_run_links(run_id: str, db: Session = Depends(get_db)):
         links = CorrelationEngine.analyze_run(run)
         Repository.save_correlation_links(db, run_id, links)
     return links
+
+
+@router.get("/runs/{run_id}/impact-analysis", response_model=ImpactAnalysisReport, summary="Get Cyber-to-Physical Impact Analysis")
+def get_impact_analysis(
+    run_id: str,
+    baseline_run_id: Optional[str] = Query(default=None, description="Optional baseline run for comparative delta"),
+    feeder_capacity_kw: float = Query(default=800.0, description="Rated feeder capacity in kW"),
+    feeder_nominal_voltage_v: float = Query(default=400.0, description="Distribution nominal AC voltage"),
+    db: Session = Depends(get_db)
+):
+    """
+    Computes rigorous cyber-to-physical impact chain, quantitative metrics,
+    feeder loading & voltage sag, threshold crossings, and correlated gateway interventions.
+    """
+    run = Repository.get_run(db, run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' not found.")
+
+    baseline_run = None
+    if baseline_run_id:
+        baseline_run = Repository.get_run(db, baseline_run_id)
+
+    report = ImpactAnalysisEngine.analyze_run(
+        run=run,
+        baseline_run=baseline_run,
+        feeder_capacity_kw=feeder_capacity_kw,
+        feeder_nominal_voltage_v=feeder_nominal_voltage_v,
+    )
+    return report
 
 
 @router.post("/runs/{run_id}/counterfactual", response_model=CounterfactualResponse, summary="Execute Counterfactual Replay (F22, F32)")

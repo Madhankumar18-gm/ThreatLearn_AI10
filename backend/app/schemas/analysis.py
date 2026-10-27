@@ -56,6 +56,91 @@ class ImpactSeverity(BaseModel):
     )
 
 
+class ImpactChainStage(BaseModel):
+    stage_id: str  # "cyber_event", "protocol_effect", "charger_response", "fleet_demand", "feeder_voltage", "operational_consequence"
+    stage_name: str
+    stage_order: int
+    observed_event: str
+    timestamp_s: Optional[float] = None
+    evidence_source: str
+    evidence_type: str  # "Direct Evidence", "Inferred Relationship", "Unverified Hypothesis"
+    status: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+
+class QuantitativeImpactMetrics(BaseModel):
+    baseline_fleet_demand_kw: Optional[float] = None
+    attack_peak_fleet_demand_kw: float
+    demand_change_kw: Optional[float] = None
+    demand_change_pct: Optional[float] = None
+    feeder_capacity_kw: float
+    feeder_loading_pct: float
+    feeder_nominal_voltage_v: float
+    min_feeder_voltage_v: float
+    voltage_deviation_v: float
+    voltage_threshold_violations_count: int
+    affected_chargers_count: int
+    active_chargers_count: int
+    faulted_chargers_count: int
+    target_charger_id: str
+    target_charger_peak_current_a: float
+    target_charger_peak_temp_c: float
+    time_to_detection_s: Optional[float] = None
+    time_to_mitigation_s: Optional[float] = None
+    attack_duration_s: Optional[float] = None
+    recovery_time_s: Optional[float] = None
+
+
+class ImpactAssessmentSummary(BaseModel):
+    what_happened: str
+    affected_segment: str
+    physical_changes: str
+    thresholds_crossed: List[str]
+    mitigation_applied: str
+    uncertainties_and_limitations: str
+    severity_level: str  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    severity_rationale: str
+    facts_count: int
+    metrics_count: int
+    assessments_count: int
+    unverified_count: int
+
+
+class CorrelatedGatewayIntervention(BaseModel):
+    timestamp: float
+    charge_point_id: str
+    unique_id: str
+    action: str
+    direction: str
+    decision: str
+    rule_id: str
+    reason: str
+    original_limit: Optional[float] = None
+    modified_limit: Optional[float] = None
+    correlation_type: str  # "Direct Match" or "Time-Aligned Window"
+
+
+class ImpactAnalysisReport(BaseModel):
+    run_id: str
+    scenario_id: str
+    scenario_name: str
+    scenario_family: str
+    attack_type: str
+    start_time: str
+    attack_timestamp_s: Optional[float] = None
+    target_charger_id: str
+    affected_group: str
+    event_summary: str
+    detection_status: str
+    mitigation_status: str
+    impact_chain: List[ImpactChainStage]
+    quantitative_metrics: QuantitativeImpactMetrics
+    assessment: ImpactAssessmentSummary
+    gateway_interventions: List[CorrelatedGatewayIntervention] = Field(default_factory=list)
+    timeseries: List[Dict[str, Any]] = Field(default_factory=list)  # synchronized chart slices
+    disclaimer: str
+
+
 class ClassificationResult(BaseModel):
     event_id: str
     classification: EventCategory

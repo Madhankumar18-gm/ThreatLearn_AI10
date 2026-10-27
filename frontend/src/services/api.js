@@ -77,6 +77,10 @@ export const api = {
   getRuns: (limit = 50) => request(`/runs?limit=${limit}`),
   getRun: (runId) => request(`/runs/${runId}`),
   getRunLinks: (runId) => request(`/runs/${runId}/links`),
+  getImpactAnalysis: (runId, baselineRunId = null) => {
+    const q = baselineRunId ? `?baseline_run_id=${encodeURIComponent(baselineRunId)}` : '';
+    return request(`/runs/${runId}/impact-analysis${q}`);
+  },
 
   // Counterfactual Replay (F22, F32)
   runCounterfactual: (runId, targetEventId) => {

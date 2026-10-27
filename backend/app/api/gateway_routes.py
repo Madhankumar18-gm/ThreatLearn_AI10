@@ -81,6 +81,12 @@ def get_gateway_interventions(
 def clear_gateway_interventions():
     """Clear recorded intervention events and reset audit counters."""
     gateway_audit_service.clear()
+    if gateway_manager.proxy:
+        gateway_manager.proxy.total_messages = 0
+        gateway_manager.proxy.total_allowed = 0
+        gateway_manager.proxy.total_clamped = 0
+        gateway_manager.proxy.total_blocked = 0
+        gateway_manager.proxy.total_errors = 0
     return {"status": "cleared", "total_records": 0}
 
 

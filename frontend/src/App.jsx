@@ -4,18 +4,15 @@ import Overview from './pages/Overview';
 import ScenarioLab from './pages/ScenarioLab';
 import IncidentAnalysis from './pages/IncidentAnalysis';
 import ImpactAnalysis from './pages/ImpactAnalysis';
-import CounterfactualReplay from './pages/CounterfactualReplay';
 import IncidentHistory from './pages/IncidentHistory';
 import AboutLimitations from './pages/AboutLimitations';
 import ScenarioBuilder from './pages/ScenarioBuilder';
-import DefenseLab from './pages/DefenseLab';
 import OCPPGateway from './pages/OCPPGateway';
 import ImportWizard from './pages/ImportWizard';
 import EvaluationScorecard from './pages/EvaluationScorecard';
 import FleetGrid from './pages/FleetGrid';
 import IncidentComparison from './pages/IncidentComparison';
 import IncidentReports from './pages/IncidentReports';
-import AblationStudio from './pages/AblationStudio';
 import { api } from './services/api';
 import { AlertCircle, Shield } from 'lucide-react';
 
@@ -34,13 +31,12 @@ export default function App() {
       .catch((err) => console.error('Failed to load scenarios', err));
   }, []);
 
-  // Auto-clear error banner after 8 seconds
+  // Redirect obsolete tabs cleanly to active features
   useEffect(() => {
-    if (errorBanner) {
-      const timer = setTimeout(() => setErrorBanner(null), 8000);
-      return () => clearTimeout(timer);
+    if (activeTab === 'counterfactual' || activeTab === 'defense-lab' || activeTab === 'ablation-studio') {
+      setActiveTab('impact-analysis');
     }
-  }, [errorBanner]);
+  }, [activeTab]);
 
   // Handler to run a simulation
   const handleRunSimulation = async (scenarioId, seed = null) => {
@@ -73,7 +69,7 @@ export default function App() {
 
   const handleSelectEventForReplay = (eventId) => {
     setTargetEventId(eventId);
-    setActiveTab('counterfactual');
+    setActiveTab('impact-analysis');
   };
 
   const handleLoadRun = async (runId) => {
@@ -161,22 +157,10 @@ export default function App() {
         {activeTab === 'impact-analysis' && (
           <ImpactAnalysis
             currentRun={currentRun}
+            setCurrentRun={setCurrentRun}
             setActiveTab={setActiveTab}
-            onSelectEventForReplay={handleSelectEventForReplay}
-          />
-        )}
-
-        {activeTab === 'counterfactual' && (
-          <CounterfactualReplay
-            currentRun={currentRun}
             targetEventId={targetEventId}
-            setTargetEventId={setTargetEventId}
-            setActiveTab={setActiveTab}
           />
-        )}
-
-        {activeTab === 'defense-lab' && (
-          <DefenseLab scenarios={scenarios} />
         )}
 
         {activeTab === 'ocpp-gateway' && (
@@ -189,10 +173,6 @@ export default function App() {
 
         {activeTab === 'incident-reports' && (
           <IncidentReports />
-        )}
-
-        {activeTab === 'ablation-studio' && (
-          <AblationStudio />
         )}
 
         {activeTab === 'import-wizard' && (

@@ -14,7 +14,8 @@ import {
   Clock,
   Shield,
   Thermometer,
-  BatteryCharging
+  BatteryCharging,
+  TrendingUp
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -63,7 +64,7 @@ export default function Overview({ setActiveTab, onSelectAndRun, currentRun }) {
             </div>
 
             <p className="text-[#52647A] text-base sm:text-lg leading-relaxed max-w-3xl font-normal">
-              Simulate cyber events, trace their physical effects across EV charging systems through grounded component dependency graphs, and investigate the evidence through deterministic counterfactual replay.
+              Simulate cyber events, trace their physical effects across EV charging systems through grounded component dependency graphs, and evaluate end-to-end cyber-physical impact chains and grid feeder stability.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -275,22 +276,25 @@ export default function Overview({ setActiveTab, onSelectAndRun, currentRun }) {
           </p>
         </div>
 
-        {/* Card 4: Counterfactual Replay */}
-        <div className="bg-white border border-[#D7E1ED] rounded-2xl p-6 space-y-3 shadow-xs hover:border-amber-500 hover:shadow-md transition-all">
+        {/* Card 4: Impact Analysis */}
+        <div 
+          onClick={() => setActiveTab('impact-analysis')}
+          className="bg-white border border-[#D7E1ED] rounded-2xl p-6 space-y-3 shadow-xs hover:border-[#0891B2] hover:shadow-md transition-all cursor-pointer group"
+        >
           <div className="flex items-center justify-between text-[#52647A]">
-            <span className="text-xs font-bold uppercase tracking-wider font-mono">Counterfactual Replay</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-              <GitCompare className="w-5 h-5" />
+            <span className="text-xs font-bold uppercase tracking-wider font-mono">Impact Analysis</span>
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center text-[#0891B2] group-hover:scale-105 transition-transform">
+              <TrendingUp className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl lg:text-4xl font-bold font-mono text-amber-800">
-              Δ Proof <span className="text-sm font-semibold text-[#52647A]">Active</span>
+            <div className="text-3xl lg:text-4xl font-bold font-mono text-[#0891B2]">
+              Physical <span className="text-sm font-semibold text-[#52647A]">Impact Chain</span>
             </div>
-            <div className="text-sm font-semibold text-amber-700 mt-1">Single-Event Isolation</div>
+            <div className="text-sm font-semibold text-cyan-800 mt-1">Cyber-to-Grid Cascade</div>
           </div>
           <p className="text-sm text-[#52647A] leading-relaxed border-t border-[#EDF2F7] pt-3">
-            Excises candidate cyber events to prove whether physical effects disappeared, decreased, or remained.
+            Trace how cyber commands propagate to EV battery temperatures, peak fleet demand, and feeder voltage sag.
           </p>
         </div>
       </div>

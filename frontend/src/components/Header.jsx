@@ -16,7 +16,8 @@ import {
   Award,
   Radio,
   FileText,
-  BarChart2
+  BarChart2,
+  TrendingUp
 } from 'lucide-react';
 import SimulationBadge from './SimulationBadge';
 
@@ -29,12 +30,10 @@ export default function Header({ activeTab, setActiveTab, currentRun }) {
     { id: 'scenario-lab', label: 'Scenario Lab', icon: Layers },
     { id: 'scenario-builder', label: 'Scenario Builder', icon: Sliders },
     { id: 'incident-analysis', label: 'Incident Analysis', icon: Activity },
-    { id: 'counterfactual', label: 'Counterfactual Replay', icon: GitCompare },
-    { id: 'defense-lab', label: 'Defense Lab', icon: ShieldCheck },
+    { id: 'impact-analysis', label: 'Impact Analysis', icon: TrendingUp },
     { id: 'ocpp-gateway', label: 'OCPP Gateway', icon: Shield },
     { id: 'incident-comparison', label: 'Compare', icon: GitCompare },
     { id: 'incident-reports', label: 'Reports', icon: FileText },
-    { id: 'ablation-studio', label: 'Ablation & Data', icon: BarChart2 },
     { id: 'evaluation-scorecard', label: 'Scorecard', icon: Award },
     { id: 'import-wizard', label: 'Ingestion', icon: Upload },
     { id: 'history', label: 'History', icon: History },

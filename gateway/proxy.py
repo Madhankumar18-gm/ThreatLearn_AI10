@@ -286,6 +286,8 @@ class GatewayProxy:
                     frame = OCPPFrameParser.parse_raw(raw_message, max_bytes=self.config.max_frame_bytes)
                 except OCPPParseError as err:
                     session.messages_rejected += 1
+                    self.total_messages += 1
+                    self.total_blocked += 1
                     logger.warning(
                         "[%s:%s] Parse violation: %s (ErrorCode=%s, can_respond=%s)",
                         session.charge_point_id,
@@ -294,6 +296,24 @@ class GatewayProxy:
                         err.error_code,
                         err.can_respond_call_error,
                     )
+                    if self.audit_callback:
+                        try:
+                            self.audit_callback({
+                                "timestamp": time.time(),
+                                "charge_point_id": session.charge_point_id,
+                                "unique_id": getattr(err, "unique_id", None) or "MALFORMED",
+                                "action": getattr(err, "action", None) or "UNKNOWN",
+                                "direction": direction,
+                                "decision": "BLOCK",
+                                "rule_id": "RULE-FRAME",
+                                "reason": f"Malformed OCPP Frame: {err.description}",
+                                "original_limit": None,
+                                "modified_limit": None,
+                                "error_code": err.error_code,
+                            })
+                        except Exception:
+                            pass
+
                     if err.can_respond_call_error:
                         # Return CALLERROR to sender (allowed only for CALL violations)
                         call_err = err.to_call_error()
